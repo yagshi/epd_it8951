@@ -13,7 +13,7 @@ int main() {
     return -1;
   }
   for (int i = 0; i < dev.panelW * dev.panelH; i++) {
-    buf[i] = rand();
+    buf[i] = (i / dev.panelW) >> 2;
   }
   while(it8951_is_busy());
   it8951_transfer_image(0, 0, dev.panelW, dev.panelH, buf);

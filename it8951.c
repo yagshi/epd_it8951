@@ -7,11 +7,8 @@ IT8951DevInfo gstI80DevInfo;
 uint32_t gulImgBufAddr; //IT8951 Image buffer address
 
 
-//-----------------------------------------------------------
-//Host controller function 1---Wait for host data Bus Ready
-//-----------------------------------------------------------
-void lcd_wait_for_ready() {
-  while (bcm2835_gpio_lev(HRDY) == 0);
+int lcd_is_busy() {
+  return bcm2835_gpio_lev(HRDY) == 0;
 }
 
 //-----------------------------------------------------------
@@ -21,15 +18,15 @@ void lcd_write_cmd_code(uint16_t usCmdCode) {
   //Set Preamble for Write Command
   uint16_t wPreamble = 0x6000; 
   
-  lcd_wait_for_ready();
+  while (lcd_is_busy());
   
   bcm2835_gpio_write(CS, LOW);
   
   bcm2835_spi_transfer(wPreamble >> 8);
   bcm2835_spi_transfer(wPreamble);
   
-  lcd_wait_for_ready();
-  
+  while (lcd_is_busy());
+ 
   bcm2835_spi_transfer(usCmdCode >> 8);
   bcm2835_spi_transfer(usCmdCode);
   
@@ -43,19 +40,19 @@ void lcd_read_n_data(uint16_t* pwBuf, uint32_t ulSizeWordCnt) {
   uint32_t i;
   uint16_t wPreamble = 0x1000;
 
-  lcd_wait_for_ready();
+  while (lcd_is_busy());
 	
   bcm2835_gpio_write(CS, LOW);
 
   bcm2835_spi_transfer(wPreamble >> 8);
   bcm2835_spi_transfer(wPreamble);
 	
-  lcd_wait_for_ready();
+  while (lcd_is_busy());
 	
   pwBuf[0] = bcm2835_spi_transfer(0x00);//dummy
   pwBuf[0] = bcm2835_spi_transfer(0x00);//dummy
 	
-  lcd_wait_for_ready();
+  while (lcd_is_busy());
 	
   for (i = 0; i < ulSizeWordCnt; i++) {
     pwBuf[i] = bcm2835_spi_transfer(0x00) << 8;
@@ -72,14 +69,14 @@ void lcd_write_data(uint16_t usData) {
   //Set Preamble for Write Data
   uint16_t wPreamble = 0x0000;
 
-  lcd_wait_for_ready();
+  while (lcd_is_busy());
 
   bcm2835_gpio_write(CS, LOW);
 
   bcm2835_spi_transfer(wPreamble >> 8);
   bcm2835_spi_transfer(wPreamble);
 	
-  lcd_wait_for_ready();
+  while (lcd_is_busy());
 			
   bcm2835_spi_transfer(usData >> 8);
   bcm2835_spi_transfer(usData);
@@ -94,19 +91,19 @@ uint16_t lcd_read_data() {
   uint16_t wRData; 
   uint16_t wPreamble = 0x1000;
 
-  lcd_wait_for_ready();
+  while (lcd_is_busy());
 
   bcm2835_gpio_write(CS, LOW);
 		
   bcm2835_spi_transfer(wPreamble >> 8);
   bcm2835_spi_transfer(wPreamble);
 
-  lcd_wait_for_ready();
+  while (lcd_is_busy());
         
   wRData = bcm2835_spi_transfer(0x00);//dummy
   wRData = bcm2835_spi_transfer(0x00);//dummy
 	
-  lcd_wait_for_ready();
+  while (lcd_is_busy());
         
   wRData = bcm2835_spi_transfer(0x00) << 8;
   wRData |= bcm2835_spi_transfer(0x00);
@@ -123,14 +120,14 @@ void lcd_wWrite_cmd_code(uint16_t usCmdCode) {
   //Set Preamble for Write Command
   uint16_t wPreamble = 0x6000; 
 	
-  lcd_wait_for_ready();
+  while (lcd_is_busy());
 
   bcm2835_gpio_write(CS,LOW);
 	
   bcm2835_spi_transfer(wPreamble >> 8);
   bcm2835_spi_transfer(wPreamble);
 	
-  lcd_wait_for_ready();
+  while (lcd_is_busy());
 	
   bcm2835_spi_transfer(usCmdCode >> 8);
   bcm2835_spi_transfer(usCmdCode);
